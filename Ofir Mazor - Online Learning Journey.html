@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ofir Mazor - Online Learning Journey</title>
+    <!-- Tailwind CSS CDN --><script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN for the Radar Chart --><script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <!-- Font --><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for the clean, light aesthetic */
+        /* Primary colors (Purple, Green, Orange) are preserved for main elements */
+        :root {
+            --primary-purple: #7e22ce; /* Purple 700 */
+            --accent-green: #15803d;   /* Green 700 */
+            --accent-orange: #c2410c;  /* Orange 700 */
+            --bg-light: #ffffff;
+            --text-dark: #1f2937;      /* Gray 800 */
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+        }
+        .infographic-card {
+            background-color: #ffffff;
+            /* Default light border for non-colored cards */
+            border: 2px solid #f3f4f6; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        .course-card.colored-border {
+            border-width: 3px; /* Slightly thicker border for color emphasis */
+        }
+        .infographic-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: #e5e7eb; /* Reset hover border to light gray if not colored */
+        }
+        .search-input {
+            border: 2px solid #e5e7eb;
+            background-color: #ffffff;
+            color: var(--text-dark);
+            transition: all 0.3s;
+        }
+        .search-input:focus {
+            box-shadow: 0 0 0 3px rgba(126, 34, 206, 0.2);
+            border-color: var(--primary-purple);
+        }
+        .course-link {
+            color: var(--primary-purple);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .course-link:hover {
+            color: var(--accent-orange);
+            text-decoration: underline;
+        }
+        .platform-tag {
+            background-color: #f0fdf4; /* Light Green bg */
+            color: var(--accent-green);
+            border: 1px solid #bbf7d0;
+        }
+        .category-tag {
+            color: var(--accent-orange);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+        /* Chart Container */
+        #radarChart {
+            background-color: #ffffff;
+        }
+        /* Custom Scrollbar for cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-purple); 
+        }
+        
+        .category-filter-item {
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+        .category-filter-item:hover {
+            background-color: #f3f4f6; 
+        }
+        .category-filter-item.active {
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .category-filter-item.active .text-gray-600,
+        .category-filter-item.active .text-gray-800,
+        .category-filter-item.active .font-medium {
+            color: white !important; 
+        }
+        .category-filter-item.active .bg-gray-100 {
+            background-color: rgba(255, 255, 255, 0.3); 
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-10 bg-white">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Title Section --><div class="text-center mb-12">
+            <h1 class="text-4xl sm:text-6xl font-bold mb-2 text-purple-700 tracking-tight">
+                Ofir Mazor
+            </h1>
+            <h2 class="text-xl sm:text-2xl font-medium text-orange-700">
+                Online Learning Journey
+            </h2>
+            <div class="w-24 h-1 bg-green-700 mx-auto mt-6 rounded-full"></div>
+        </div>
+
+        <!-- Search Bar --><div class="mb-10 max-w-3xl mx-auto">
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <input type="text" id="searchInput" onkeyup="filterCourses()" placeholder="Search courses or platforms..." class="search-input w-full pl-10 p-4 rounded-xl text-lg focus:outline-none shadow-sm">
+            </div>
+        </div>
+
+        <!-- Radar Chart and Course Statistics --><div class="grid lg:grid-cols-12 gap-8 mb-16 items-start">
+            
+            <!-- Statistics Card --><div class="infographic-card p-8 rounded-2xl lg:col-span-4 h-full">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+                    <span class="w-2 h-8 bg-purple-700 mr-3 rounded-full"></span>
+                    Catalog Overview
+                </h2>
+                <div class="space-y-4 text-base">
+                    <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                        <span class="text-purple-900 font-medium">Total Courses</span>
+                        <span id="totalCourses" class="font-bold text-2xl text-purple-700">0</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
+                        <span class="text-orange-900 font-medium">Visible Courses</span>
+                        <span id="visibleCourses" class="font-bold text-2xl text-orange-700">0</span>
+                    </div>
+                    
+                    <div class="mt-8 pt-6 border-t-2 border-gray-100">
+                        <p class="font-bold text-lg text-gray-700 mb-4">Filter by Category</p>
+                        <ul id="categoryList" class="space-y-1 text-sm">
+                            <!-- Category stats will be inserted here --></ul>
+                        <button id="clearFilterBtn" onclick="filterByCategory(null)" class="hidden mt-4 w-full text-sm font-semibold py-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+                            Clear Category Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Radar Chart Container --><div class="infographic-card p-6 rounded-2xl lg:col-span-8 h-full flex items-center justify-center relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-green-100 rounded-full -mr-16 -mt-16 opacity-50"></div>
+                <div class="absolute bottom-0 left-0 w-24 h-24 bg-purple-100 rounded-full -ml-12 -mb-12 opacity-50"></div>
+                <div class="w-full h-full relative z-10">
+                    <canvas id="radarChart" class="max-h-[350px] w-full"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Course List --><div id="courseList" class="grid sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Course cards will be inserted here --></div>
+
+        <!-- No Results Message --><div id="noResults" class="hidden text-center py-16 infographic-card rounded-2xl mt-8 bg-gray-50 border-dashed border-2 border-gray-300">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p class="text-xl text-gray-600 mt-4 font-medium">No courses found matching that search.</p>
+            <button onclick="document.getElementById('searchInput').value = ''; filterCourses();" class="mt-4 text-purple-700 font-bold hover:text-purple-900 underline">Clear Search</button>
+        </div>
+        
+        <div class="mt-16 text-center text-gray-400 text-sm pb-8">
+            &copy; 2025 Ofir Mazor Learning Profile
+        </div>
+    </div>
+
+    <script>
+        // Data has been deduplicated and correctly categorized. Total unique courses: 94.
+        const courseData = [
+            { name: "Machine Learning Specialization", platform: "Coursera", link: "https://coursera.org/share/18b41e95ed83d1a87c96da2d9d15d1dd", category: "C-ML" },
+            { name: "Keras - Python Deep Learning Neural Network API", platform: "Deep Lizzard", link: "https://deeplizard.com/learn/playlist/PLZbbT5o_s2xrwRnXk_yCPtnqqo4_u2YGL", category: "DL-GA" },
+            { name: "Automating GIS-processes", platform: "University of Helsinki", link: "https://autogis-site.readthedocs.io/en/latest/index.html", category: "GEO" },
+            { name: "Echoes in Space", platform: "EO College", link: "https://eo-college.org/certificates/basic-blue-2023/view/75B574CED1-3409854-34049D2/", category: "GEO" },
+            { name: "Basic Principles of Radar Backscatter", platform: "EO College", link: "https://eo-college.org/certificates/basic-blue-2023/view/75B574CED1-7591B18ACA-34049D2/", category: "GEO" },
+            { name: "Winter-Water-Warming: Canadian SAR Applications", platform: "EO College", link: "https://eo-college.org/certificates/basic-blue-2023/view/75B574CED1-75A3564A4D-34049D2/", category: "GEO" },
+            { name: "Beyond the Visible – Imaging Spectroscopy for Agricultural Applications", platform: "EO College", link: "https://eo-college.org/verify/75B5937CBD-75AF8F1B3F-34049D2/", category: "GEO" },
+            { name: "Beyond the Visible – Imaging Spectroscopy for Soil Applications", platform: "EO College", link: "https://eo-college.org/verify/75B5937CBD-77EB48CEF4-34049D2/", category: "GEO" },
+            { name: "Processing SAR Data in ArcGIS Notebooks", platform: "Esri MOOCs", link: "https://www.esri.com/training/TrainingRecord/Certificate/ofir_mazor/67f16dc17e9e87b9b73b0029/-180", category: "GEO" },
+            { name: "Hyperspectral Remote Sensing from the Scratch", platform: "Geo University", link: "https://www.geo.university/certificates/yvgpwqjnxt", category: "GEO" },
+            { name: "Hyperspectral Thermal Image Unmixing", platform: "Geo University", link: "https://pdf.credential.net/rl80l06r_1747643461821.pdf", category: "GEO" },
+            { name: "Digital Image Processing with OpenCV in Python", platform: "Geo University", link: "https://www.geo.university/certificates/1ng66hhqbw", category: "GEO" },
+            { name: "Intro to Machine Learning", platform: "Kaggle", link: "https://www.kaggle.com/learn/intro-to-machine-learning", category: "C-ML" },
+            { name: "Intermediate Machine Learning", platform: "Kaggle", link: "https://www.kaggle.com/learn/intermediate-machine-learning", category: "C-ML" },
+            { name: "Data Visualization", platform: "Kaggle", link: "https://www.kaggle.com/learn/data-visualization", category: "D-AV" },
+            { name: "Geospatial Analysis", platform: "Kaggle", link: "https://www.kaggle.com/learn/geospatial-analysis", category: "GEO" },
+            { name: "Computer Vision", platform: "Kaggle", link: "https://www.kaggle.com/learn/computer-vision", category: "DL-GA" },
+            { name: "Feature Engineering", platform: "Kaggle", link: "https://www.kaggle.com/learn/certification/ofirmazor/feature-engineering", category: "C-ML" },
+            { name: "Introduction to PyTorch", platform: "Microsoft Learn", link: "https://docs.microsoft.com/en-us/learn/modules/intro-machine-learning-pytorch/", category: "DL-GA" },
+            { name: "Introduction to Computer Vision with PyTorch", platform: "Microsoft Learn", link: "https://docs.microsoft.com/en-us/learn/modules/intro-computer-vision-pytorch/", category: "DL-GA" },
+            { name: "Intro to Deep Learning with PyTorch", platform: "Udacity", link: "https://www.udacity.com/course/deep-learning-pytorch--ud188", category: "DL-GA" },
+            { name: "Introduction to Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/4a8adb0aaf77a0eb4d038be0b16c05e10556a853?raw=1", category: "P-F" },
+            { name: "Intermediate Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/c2553a0634acc5f9c3eff117b45215d0fd4cf70a?raw=1", category: "P-F" },
+            { name: "Understanding Data Science", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/9fb4d9a219f64b5937f81ddc0ed940240c23de49?raw=1", category: "D-AV" },
+            { name: "Supervised Learning with scikit-learn", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/497f7574b494015be61d511b6cf09eec28677f6b?raw=1", category: "C-ML" },
+            { name: "Joining Data in SQL", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/8531648c87a3c617f67ab37b04236b5cf202c6da?raw=1", category: "D-AV" },
+            { name: "Understanding Cloud Computing", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/81ae63bc4490eaa26238866fede78eaa59ab99ff?raw=1", category: "DE-O" },
+            { name: "Generative AI Concepts", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/13124b01c7346f9ebb16502cae98b0ce69a53e29?raw=1", category: "DL-GA" },
+            { name: "Understanding Machine Learning", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/620754870ba00a6123919e3160e7da1b04337d63?raw=1", category: "C-ML" },
+            { name: "Introduction to Git", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/0b596f411f7248c6174013fe3e1ff3cfe88957e1?raw=1", category: "P-F" },
+            { name: "Introduction to Statistics in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/26af024d318e29daccc9a7adcc63b18c877ac0f9?raw=1", category: "D-AV" },
+            { name: "Joining Data with pandas", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/26af024d318e29daccc9a7adcc63b18c877ac0f9?raw=1", category: "D-AV" },
+            { name: "Unsupervised Learning in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/f14d0525b8572c3fda5b50e94a1266a3e56ff632?raw=1", category: "C-ML" },
+            { name: "Introduction to Deep Learning with PyTorch", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/7e90d34bfa68bba28881bd817d78520b810bffb6?raw=1", category: "DL-GA" },
+            { name: "Introduction to Data Visualization with Seaborn", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/e22d2a9cbf6d6fcab7f86441f05218826df0ccf0?raw=1", category: "D-AV" },
+            { name: "Exploratory Data Analysis in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/b6970342faed85711acd2355ae32a88fdae1?raw=1", category: "D-AV" },
+            { name: "Introduction to Data Visualization with Matplotlib", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/41fc236f1687c674a4c022df71d538aa5aa2d102?raw=1", category: "D-AV" },
+            { name: "Introduction to Importing Data in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/2ba957e48d0134c940e667dc6d47f1ffc94173ca?raw=1", category: "P-F" },
+            { name: "Introduction to PySpark", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/372bf53df643610ce93992fac14461dce5a5964e?raw=1", category: "DE-O" },
+            { name: "Cleaning Data in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/f96ed2dc17324984bb0c4d45470f6bf08efbdfb0?raw=1", category: "D-AV" },
+            { name: "Working with Hugging Face", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/0eaa1c375a59c1c9c236aeb3c1fec09fc192cb72?raw=1", category: "DL-GA" },
+            { name: "Machine Learning with Tree-Based Models in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/81d692c757dc078d9b8dabddddb24ebd7c2e2a2e?raw=1", category: "C-ML" },
+            { name: "Data Communication Concepts", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/467e62564ceb6c3e80c0da368f7767da43c28d02?raw=1", category: "D-AV" },
+            { name: "Intermediate Git", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/20b04643ed03bfe1a9b1cdaafaa3d1dda0bef2fd?raw=1", category: "P-F" },
+            { name: "Introduction to Functions in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/4e6b58dd5dcc373f49bf2221d6cf4016fa21381e?raw=1", category: "P-F" },
+            { name: "Writing Efficient Python Code", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/6b82ced90f6f37ee221bb21a49ff3c4dd21c6e33?raw=1", category: "P-F" },
+            { name: "Responsible AI Practices", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/9f03cb16e8a00ebc88dc4846c75a9ea4ac41b58e?raw=1", category: "C-ML" },
+            { name: "Python Toolbox", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/9a32cf7b347b78990969238143ff32954ecc28bd?raw=1", category: "P-F" },
+            { name: "Introduction to GitHub Concepts", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/7c26fdca78de5c4170cedf0496553af10c6d04e2?raw=1", category: "P-F" },
+            { name: "Intermediate Importing Data in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/2f2a7e766814f2aeb9b2b7c985acb173369c0584?raw=1", category: "P-F" },
+            { name: "ETL and ELT in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/d1d3dc12f046caafa7b1dac61251fda1c358ea62?raw=1", category: "DE-O" },
+            { name: "MLOps Concepts", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/ed3f7fdf880df5009f3c794bed497f5e1ccc63fd?raw=1", category: "DE-O" },
+            { name: "Introduction to Shell", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/5042da00e35b1e5577c517017d2757147f3a400d?raw=1", category: "P-F" },
+            { name: "Writing Functions in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/d090b515f5fe1636eb86a0679fc0359e536f5e52?raw=1", category: "P-F" },
+            { name: "Working with Dates and Times in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/cdfee882c118c097771d662676227daa171eb014?raw=1", category: "D-AV" },
+            { name: "Intermediate Deep Learning with PyTorch", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/89afc43471a3c206ffbd9f48e4874ace80eade84?raw=1", category: "DL-GA" },
+            { name: "Introduction to Natural Language Processing in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/81ab2ebd2d959e85c74bd78107a15dc74ea6627d?raw=1", category: "DL-GA" },
+            { name: "Cluster Analysis in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/3da3d60215a4716ba8dc3e3f100c8df49d4f4d3c?raw=1", category: "C-ML" },
+            { name: "Preprocessing for Machine Learning in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/813a9277cbc73f27dcb57d8dc4fd58ea911d2daa?raw=1", category: "C-ML" },
+            { name: "Machine Learning for Business", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/aa1a70e77661edfbf34e87d397eb6ae7099fa8bb?raw=1", category: "C-ML" },
+            { name: "Introduction to Data Privacy", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/70f83cd7f19167011d3976f856e0b74c8d96bfeb?raw=1", category: "DE-O" },
+            { name: "Machine Learning with scikit-learn", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/9d16cb0d7c3f62820848f61aed920d45942b9cef?raw=1", category: "C-ML" },
+            { name: "Linear Classifiers in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/2fb9f564f8b1a9a491853340c9ea654f49fa25ca?raw=1", category: "C-ML" },
+            { name: "Introduction to Data Security", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/638388c013a7c81515070b2101d32f7cae9dba69?raw=1", category: "DE-O" },
+            { name: "Working with Llama 3", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/400cc16d57500852fdb4fdcdb599047df0977fb6?raw=1", category: "DL-GA" },
+            { name: "Working with Categorical Data in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/a704fc2f17fbb0b1e29191f6189ac35ab14fa8a0?raw=1", category: "D-AV" },
+            { name: "Responsible AI Data Management", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/9347a5869a2915078d50a2e0acaf723169d8b33f?raw=1", category: "C-ML" },
+            { name: "Dimensionality Reduction in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/58a535d50a01c376a6822fcddc597034c8ad465d?raw=1", category: "C-ML" },
+            { name: "Introduction to Deep Learning in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/044298f381665452314af1c9865fc7a43ac42e90?raw=1", category: "DL-GA" },
+            { name: "Streamlined Data Ingestion with pandas", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/a0dc6befe4413fb5c755f5999dd85141938f242f?raw=1", category: "D-AV" },
+            { name: "AI Security and Risk Management", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/f966bf405e01e02b4a5d8b873abf94d57703f92e?raw=1", category: "DE-O" },
+            { name: "Feature Engineering for Machine Learning in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/113fe85acd29da09ee1773b3859dd434b4383d83?raw=1", category: "C-ML" },
+            { name: "Model Validation in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/8ad9c59c781550d5fa7e07e7d24c17a577f9ec1a?raw=1", category: "C-ML" },
+            { name: "Machine Learning for Time Series Data in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/a7075b9ae55082bdfd294de94c9d3338a8583c88?raw=1", category: "C-ML" },
+            { name: "Deep Learning with PyTorch", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/c317e9a2413ae899c63dc9a3918d093724960fd1?raw=1", category: "DL-GA" },
+            { name: "Introduction to MLflow", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/ceb45c151d297ca5aba195800003147177405c33?raw=1", category: "DE-O" },
+            { name: "Extreme Gradient Boosting with XGBoost", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/760cdcacf3bc4ad326eac3969718977ccd07c034?raw=1", category: "C-ML" },
+            { name: "Image Processing in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/1bad9ca146afd1ee05f11d3a759ffbdb6e587414?raw=1", category: "GEO" },
+            { name: "Data Management Concepts", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/1c854332060c8236d6c23d5e186ffd58be260a0d?raw=1", category: "DE-O" },
+            { name: "Machine Learning with PySpark", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/c0281d5d106ed687f174d3e6a96ad442b51b70bb?raw=1", category: "DE-O" },
+            { name: "Visualizing Geospatial Data in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/8b1641ae1c3ddf22e8c8014306b7209fa5a8723a?raw=1", category: "GEO" },
+            { name: "Transformer Models with PyTorch", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/07083c74465415c031f58653c8a5df29215cf614?raw=1", category: "DL-GA" },
+            { name: "Working with Geospatial Data in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/d58cc7c7f267abe3b9ee92b43d9067900612464b?raw=1", category: "GEO" },
+            { name: "MLOps Deployment and Life Cycling", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/58e71a8d592a99570cfdb3202668eeda35bedab7?raw=1", category: "DE-O" },
+            { name: "Statistical Thinking in Python (Part 1)", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/4cdfb17f8cb3c33e3badb4ad5867f2fcbb81073b?raw=1", category: "D-AV" },
+            { name: "Hyperparameter Tuning in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/732874e88f65201338fda58e160eb8260bf4be70?raw=1", category: "C-ML" },
+            { name: "Deep Learning for Images with PyTorch", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/ee1db23fd512d9236165cd2835ff1bb7143fc861?raw=1", category: "DL-GA" },
+            { name: "Intermediate Data Visualization with Seaborn", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/021928c6614c8d6c91a3fe2b0126283fdd68b917?raw=1", category: "D-AV" },
+            { name: "Introduction to TensorFlow in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/14f7cb316c5e97742172ef30a9b758d4c4a5512b?raw=1", category: "DL-GA" },
+            { name: "Developing Python Packages", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/c5e268f58d250db879ec703695473540e4051230?raw=1", category: "P-F" },
+            { name: "Introduction to GCP", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/e2fcdefa8c79ae8b464434b144850447bfc2e9d7?raw=1", category: "DE-O" },
+            { name: "Winning a Kaggle Competition in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/8cb49cf4face53460582874a7359763a07b568d3?raw=1", category: "C-ML" },
+            { name: "Natural Language Processing with spaCy", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/c5285d6697643c89162b06faa4f67097c51cdace?raw=1", category: "DL-GA" },
+            { name: "Developing Machine Learning Models for Production", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/929ccb1a777d426d48ef69b9d3247d804f7df087?raw=1", category: "DE-O" },
+            { name: "Feature Engineering for NLP in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/b5ebfa5489b668e542d6006059f43605544bf06d?raw=1", category: "DL-GA" },
+            { name: "Deep Learning for Text with PyTorch", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/035531107c37ed364e21856fc80d568560c0c346?raw=1", category: "DL-GA" },
+            { name: "Introduction to Data Visualization with Bokeh", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/c4425a7db2c46167c8f56ac659b93c8bc8cd869e?raw=1", category: "D-AV" },
+            { name: "Introduction to Deep Learning with Keras", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/c75c74260ea1f40a7845fb127eb444530fbd8430?raw=1", category: "DL-GA" },
+            { name: "Foundations of PySpark", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/46e7f4fb73f448acc4e75b6870ed6f0b693fdecf?raw=1", category: "DE-O" },
+            { name: "Sentiment Analysis in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/9ff457db331e165221e62529df3965d44bd68395?raw=1", category: "DL-GA" },
+            { name: "Image Modeling with Keras", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/9cb5d9738cb566703f3f4f226975e4fa87a350ec?raw=1", category: "DL-GA" },
+            { name: "Improving Your Data Visualizations in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/b638affa586a98049954e28fcf8452840e8ff17f?raw=1", category: "D-AV" },
+            { name: "Exploring and Analyzing Data in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/27cbc3a9fb1fd7ab6f681bb38b31a90b40be43e7?raw=1", category: "D-AV" },
+            { name: "Case Study: School Budgeting with Machine Learning in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/1ea2f07f3c13ac80f85c50f2e7b9a845f8700c43?raw=1", category: "C-ML" },
+            { name: "Statistical Thinking in Python (Part 2)", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/77ba1760bff4f112d57a44e78a459f794177aa36?raw=1", category: "D-AV" },
+            { name: "Introduction to Polars", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/5e4a141a83c1bb43c98f0ee73f81829cd0b84c38?raw=1", category: "D-AV" },
+            { name: "Introduction to Linear Modeling in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/471f26945898c5297d5bdce1b5e3d90d27e7e240?raw=1", category: "C-ML" },
+            { name: "Designing Machine Learning Workflows in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/f71771400d9421abe721b9b7075ff9de95591e71?raw=1", category: "DE-O" },
+            { name: "Anomaly Detection in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/19f804d4fb5c2331f54c6e63a8829831deb7a8cc?raw=1", category: "C-ML" },
+            { name: "Introduction to Data Versioning with DVC", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/b6755b8368045031adbb935f918f73b97adbdb82?raw=1", category: "DE-O" },
+            { name: "Biomedical Image Analysis in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/238153ab81fe86154339ca0bffe4dada7eaecb27?raw=1", category: "GEO" },
+            { name: "Spoken Language Processing in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/2a5d12522ca15f1b2768ce4e3c07fc89b6748e27?raw=1", category: "DL-GA" },
+            { name: "Introduction to Data Quality with Great Expectations", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/c977ee44e9209f266fcf4fcb13af63ff8790d657?raw=1", category: "DE-O" },
+            { name: "Practicing Machine Learning Interview Questions in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/bd90a945cc8f669c7f7964267f7a09ae0d83be6f?raw=1", category: "C-ML" },
+            { name: "Working with DeepSeek in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/fb25c7319233f1d108a14c908032794268fa21a0?raw=1", category: "DL-GA" },
+            { name: "Parallel Programming with Dask in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/7273bf1e3fdcee1c9b7e2b981a00ab21eda5ca43?raw=1", category: "DE-O" },
+            { name: "Advanced Deep Learning with Keras", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/96342bd3535a3428104c6e108c252e5c4fa2d55c?raw=1", category: "DL-GA" },
+            { name: "Statistical Simulation in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/e75dc2d9f4ed4678c89ea73f2abd690210c93a02?raw=1", category: "D-AV" },
+            { name: "Analyzing Police Activity with pandas", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/e8a9f1e6bd5667d831fd7396dbf6f8a59639087a?raw=1", category: "D-AV" },
+            { name: "Data Privacy and Anonymization in Python", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/773af17dc4423828179bdb548ea42291ba5b79d2?raw=1", category: "DE-O" },
+            { name: "Case Studies in Statistical Thinking", platform: "Data Camp", link: "https://www.datacamp.com/statement-of-accomplishment/course/10fc7e6444ea8a9a3d3787706f521cafd6dec4b9?raw=1", category: "D-AV" }
+        ];
+
+        // --- UPDATED CATEGORY MAP (6 Categories) with Colors ---
+        const categoryMap = {
+            "P-F": { fullName: "Programming Fundamentals", color: "#14b8a6", backgroundColor: "rgba(20, 184, 166, 0.2)" }, // Teal 500
+            "D-AV": { fullName: "Data Analysis & Visualization", color: "#15803d", backgroundColor: "rgba(21, 128, 61, 0.2)" }, // Green 700
+            "C-ML": { fullName: "Core Machine Learning", color: "#ff00a0", backgroundColor: "rgba(255, 0, 160, 0.2)" }, // Vivid Pink (as requested)
+            "DL-GA": { fullName: "Deep Learning & Generative AI", color: "#db2777", backgroundColor: "rgba(219, 39, 119, 0.2)" }, // Pink 600
+            "GEO": { fullName: "Geospatial & Remote Sensing", color: "#1e3a8a", backgroundColor: "rgba(30, 58, 138, 0.2)" }, // Dark Blue (as requested)
+            "DE-O": { fullName: "Data Engineering & MLOps", color: "#f59e0b", backgroundColor: "rgba(245, 158, 11, 0.2)" } // Amber 500
+        };
+
+        let chartInstance = null;
+        let activeCategoryFilter = null; // New state variable
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('totalCourses').textContent = courseData.length;
+            renderChart(courseData);
+            filterCourses(); // Initial render of course cards
+        });
+
+        /**
+         * Renders the course cards to the DOM.
+         * @param {Array} courses - The filtered array of course objects.
+         */
+        function renderCourses(courses) {
+            const courseListEl = document.getElementById('courseList');
+            const noResultsEl = document.getElementById('noResults');
+            const visibleCoursesEl = document.getElementById('visibleCourses');
+            courseListEl.innerHTML = '';
+            visibleCoursesEl.textContent = courses.length;
+
+            if (courses.length === 0) {
+                noResultsEl.classList.remove('hidden');
+                return;
+            } else {
+                noResultsEl.classList.add('hidden');
+            }
+
+            courses.forEach(course => {
+                const categoryData = categoryMap[course.category] || { fullName: 'General', color: '#6b7280' };
+                
+                const card = document.createElement('div');
+                card.className = 'infographic-card course-card p-6 rounded-xl flex flex-col justify-between h-full colored-border';
+                card.style.borderColor = categoryData.color; // Set border color
+
+                // Card content
+                card.innerHTML = `
+                    <p class="text-xs font-bold uppercase mb-2" style="color: ${categoryData.color}; letter-spacing: 0.05em;">${categoryData.fullName}</p>
+                    <h3 class="text-lg font-bold mb-4 leading-tight">
+                        <a href="${course.link}" target="_blank" rel="noopener noreferrer" class="course-link">${course.name}</a>
+                    </h3>
+                    <div class="mt-auto pt-2 border-t border-gray-100">
+                        <span class="platform-tag inline-block text-xs font-semibold px-3 py-1 rounded-full mt-2">
+                            ${course.platform}
+                        </span>
+                    </div>
+                `;
+                courseListEl.appendChild(card);
+            });
+        }
+        
+        /**
+         * Main function to filter courses by search term and active category.
+         */
+        function filterCourses() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            const filteredBySearch = courseData.filter(course => {
+                const nameMatch = course.name.toLowerCase().includes(searchTerm);
+                const platformMatch = course.platform.toLowerCase().includes(searchTerm);
+                return nameMatch || platformMatch;
+            });
+            
+            let finalFilteredList = filteredBySearch;
+
+            // Apply category filter if active
+            if (activeCategoryFilter) {
+                finalFilteredList = finalFilteredList.filter(course => 
+                    course.category === activeCategoryFilter
+                );
+            }
+
+            renderCourses(finalFilteredList);
+            // The radar chart will remain static, showing the distribution of the full catalog.
+        }
+
+        /**
+         * Filters the course list by category and updates the UI.
+         * @param {string | null} categoryKey - The category code to filter by, or null to clear the filter.
+         */
+        function filterByCategory(categoryKey) {
+            activeCategoryFilter = categoryKey;
+            
+            // Clear search input when changing category filter for a clean view
+            document.getElementById('searchInput').value = ''; 
+            
+            const allItems = document.querySelectorAll('.category-filter-item');
+            const clearBtn = document.getElementById('clearFilterBtn');
+
+            // Update UI: Toggle active class on list items and show/hide clear button
+            allItems.forEach(item => {
+                item.classList.remove('active');
+                item.style.backgroundColor = ''; // Clear background
+                if (item.getAttribute('data-category') === categoryKey) {
+                    item.classList.add('active');
+                    item.style.backgroundColor = categoryMap[categoryKey].color; // Set active background color
+                }
+            });
+
+            if (categoryKey) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+
+            // Apply the new filter state
+            filterCourses();
+        }
+
+
+        /**
+         * Renders the Radar Chart (Spider Chart) and the clickable category list.
+         * @param {Array} courses - The full list of course data.
+         */
+        function renderChart(courses) {
+            const categoryKeys = Object.keys(categoryMap);
+            const categoryCounts = {};
+            
+            // Initialize counts
+            categoryKeys.forEach(key => {
+                categoryCounts[key] = 0;
+            });
+
+            // Count courses per category
+            courses.forEach(course => {
+                if (categoryCounts.hasOwnProperty(course.category)) {
+                    categoryCounts[course.category]++;
+                }
+            });
+            
+            // Render the clickable category list
+            const categoryListEl = document.getElementById('categoryList');
+            categoryListEl.innerHTML = '';
+            categoryKeys.forEach(key => {
+                const count = categoryCounts[key];
+                const data = categoryMap[key];
+                
+                const listItem = document.createElement('li');
+                listItem.className = "flex justify-between items-center category-filter-item";
+                listItem.setAttribute('data-category', key);
+                listItem.onclick = () => filterByCategory(key); // Attach the filter function
+                
+                // Use category color for the count tag border/text
+                listItem.innerHTML = `
+                    <span class="font-medium text-gray-600">${data.fullName}</span> 
+                    <span id="count-${key}" class="font-bold px-2 py-1 rounded-md text-xs" style="color: ${data.color}; border: 1px solid ${data.color}; background-color: #ffffff;">${count}</span>
+                `;
+                categoryListEl.appendChild(listItem);
+            });
+            
+            // --- Chart Rendering Logic ---
+            const labels = categoryKeys.map(key => categoryMap[key].fullName);
+            const dataValues = categoryKeys.map(key => categoryCounts[key]);
+            const colors = categoryKeys.map(key => categoryMap[key].color);
+            // Define the chart's primary color constants for consistency with the overall theme
+            const chartPrimaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-purple').trim() || '#7e22ce';
+            const chartPrimaryBackground = chartPrimaryColor.replace('#7e22ce', 'rgba(126, 34, 206, 0.3)'); // Fallback to ensure rgba format
+
+            const ctx = document.getElementById('radarChart').getContext('2d');
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Course Count',
+                        data: dataValues,
+                        // Use the chart's primary purple color for the polygon fill
+                        backgroundColor: chartPrimaryBackground, 
+                        // Use the chart's primary purple color for the outline
+                        borderColor: chartPrimaryColor, 
+                        pointBackgroundColor: colors, // Use individual category colors for points
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: colors,
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#e5e7eb' }, 
+                            grid: { color: '#e5e7eb' },      
+                            pointLabels: {
+                                font: { size: 12, weight: '600', family: 'Poppins' },
+                                color: colors, // Use category colors for axis labels
+                                padding: 10
+                            },
+                            ticks: {
+                                display: false, 
+                                backdropColor: 'transparent',
+                                callback: function(value, index, ticks) {
+                                    // This empty callback function prevents the RangeError that was seen previously.
+                                    return value;
+                                }
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: Math.max(...dataValues) + 1 
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1f2937',
+                            titleFont: { family: 'Poppins' },
+                            bodyFont: { family: 'Poppins' },
+                            padding: 10,
+                            cornerRadius: 8,
+                            displayColors: false
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
