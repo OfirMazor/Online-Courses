@@ -122,4 +122,4 @@
 | Data Camp | [Statistical Simulation in Python](https://www.datacamp.com/statement-of-accomplishment/course/e75dc2d9f4ed4678c89ea73f2abd690210c93a02?raw=1) |
 | Data Camp | [Analyzing Police Activity with pandas](https://www.datacamp.com/statement-of-accomplishment/course/e8a9f1e6bd5667d831fd7396dbf6f8a59639087a?raw=1) |
 | Data Camp | [Data Privacy and Anonymization in Python](https://www.datacamp.com/statement-of-accomplishment/course/773af17dc4423828179bdb548ea42291ba5b79d2?raw=1) |
-| Data Camp | Case Studies in Statistical Thinking |
+| Data Camp | [Case Studies in Statistical Thinking](https://www.datacamp.com/statement-of-accomplishment/course/10fc7e6444ea8a9a3d3787706f521cafd6dec4b9?raw=1) |
